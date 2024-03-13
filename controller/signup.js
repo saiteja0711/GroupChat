@@ -3,6 +3,10 @@ const bcrypt = require('bcrypt');
 const { error } = require('console');
 const jwt = require('jsonwebtoken');
 
+function tokenGenerator (id){
+    return jwt.sign({userId:id},"secretkey")
+}
+
 const addUser = async(req,res,next)=>{
     try{
         const {name,email,phonenumber,password}=req.body;
@@ -48,7 +52,7 @@ const loginUser = async (req,res,next)=>{
         })
         if(result)
         {
-            return res.status(201).json({message:"Login succesful"})
+            return res.status(201).json({message:"Login succesful",token : tokenGenerator(user.id)});
         }
         else{
             return res.status(401).json({message:"wrong password"})
