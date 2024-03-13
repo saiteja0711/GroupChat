@@ -4,7 +4,7 @@ const { error } = require('console');
 const jwt = require('jsonwebtoken');
 
 function tokenGenerator (id){
-    return jwt.sign({userId:id},"secretkey")
+    return jwt.sign({userId:id},process.env.TOKEN_SECRET)
 }
 
 const addUser = async(req,res,next)=>{
