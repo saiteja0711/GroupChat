@@ -1,9 +1,9 @@
 const path = require('path');
 const express = require('express');
 const bodyParser = require('body-parser');
-const Sequelize = require('./util/database');
 const cors = require('cors');
-
+require('dotenv').config();
+const Sequelize = require('./util/database');
 
 const userRoutes = require('./routes/signup');
 
@@ -26,8 +26,8 @@ app.use((req,res)=>{
 })
 
 Sequelize
-.sync({force:true})
-//.sync()
+//.sync({force:true})
+.sync()
 .then (result =>{
     app.listen(3000);
 })

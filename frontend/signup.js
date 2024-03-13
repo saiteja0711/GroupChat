@@ -22,13 +22,13 @@ async function signup(e){
          let response = await axios.post('http://localhost:3000/user/signup',obj);
          if(response.status === 201)
          {
-            Message.innerHTML=`<h3> Succesfully Created </h3>`
+            Message.innerHTML=`<h3> Successfuly signed up </h3>`
          }
       }
       catch (err){
         if(err.response.status === 401)
         {
-            errorMessages.innerHTML=`<h3> Email or Phonenumber is alreadytaken </h3>`
+            errorMessages.innerHTML=`<h3> User already exists, Please Login </h3>`
         }
         console.log(err);
 

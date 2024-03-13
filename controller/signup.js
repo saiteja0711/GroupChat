@@ -1,5 +1,7 @@
 const Users =require('../models/signup');
 const bcrypt = require('bcrypt');
+const { error } = require('console');
+const jwt = require('jsonwebtoken');
 
 const addUser = async(req,res,next)=>{
     try{
@@ -20,6 +22,44 @@ const addUser = async(req,res,next)=>{
        res.status(500).json({error:err})
     }
 }
+
+
+const loginUser = async (req,res,next)=>{
+    try{
+        const {email,password}=req.body;
+
+        const user = await Users.findOne({where:{email:email}});
+        if(!user)
+        {
+            return res.status(404).json({err: "user not found"})
+        }
+
+        const result = await new Promise((resolve,reject)=>{
+             bcrypt.compare(password,user.password, (err,result)=>{
+                if(err)
+                {
+                    console.log(error);
+                    reject(err);
+                }
+                else{
+                    resolve(result);
+                }
+            })
+        })
+        if(result)
+        {
+            return res.status(201).json({message:"Login succesful"})
+        }
+        else{
+            return res.status(401).json({message:"wrong password"})
+        }
+
+    }
+    catch(err){
+          console.log(err);
+    }
+}
 module.exports={
-    addUser
+    addUser,
+    loginUser
 }
