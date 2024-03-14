@@ -19,7 +19,7 @@ async function signup(e){
       errorMessages.innerHTML='';
       Message.innerHTML='';
       try{
-         let response = await axios.post('http://localhost:3000/user/signup',obj);
+         let response = await axios.post('http://localhost:3000/users/signup',obj);
          if(response.status === 201)
          {
             Message.innerHTML=`<h3> Successfuly signed up </h3>`

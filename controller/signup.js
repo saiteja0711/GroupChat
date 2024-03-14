@@ -1,6 +1,5 @@
 const Users =require('../models/signup');
 const bcrypt = require('bcrypt');
-const { error } = require('console');
 const jwt = require('jsonwebtoken');
 
 function tokenGenerator (id){

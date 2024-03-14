@@ -4,13 +4,82 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
+    <style>
+        body{
+            font-family: sans-serif;
+            text-align: center;
+            background-color:  #f3f3f3;
+        }
+        #loginuser{
+            width:50%;
+            text-align: left;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius:10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);;
+        }
+        h1{
+            color: #333;
+        }
+        label{
+            font-weight: bold;
+        }
+        input[type="text"],
+      input[type="password"] {
+          width: 100%;
+          padding: 10px;
+          margin: 5px 0;
+          border: 1px solid #202020;
+          border-radius: 5px;
+          box-sizing: border-box;
+      }
+
+      button[type="submit"] {
+          background-color: #0891ba;
+         
+          color: white;
+          padding: 10px 20px;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+      }
+
+      button[type="submit"]:hover {
+          background-color: #03657d;
+      }
+
+      a {
+          display: block;
+          margin-top: 20px;
+          color: #206976;
+          text-decoration: none;
+      }
+
+      a:hover {
+          text-decoration: underline;
+      }
+
+      #message,
+      #errorMessages {
+          margin-top: 20px;
+      }
+      
+      #message{
+          color: #1c8e22;
+      }
+      #errorMessages {
+          color: red;
+      }
+    </style>
 </head>
 <body>
+    <h1>Login</h1>
     <form id="loginuser">
-        <label for="email">Email:</label>
+        <label for="email">Email:</label><br>
         <input type="text" id="email" name="email" required><br><br>
     
-        <label for="password">password:</label>
+        <label for="password">Password:</label><br>
         <input type="password" id="password" name="password" required><br><br>
     
         <button type="submit">Login</button>

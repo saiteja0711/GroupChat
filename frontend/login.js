@@ -17,11 +17,12 @@ loginForm.addEventListener('submit',loginUser);
       Message.innerHTML='';
 
     try{
-        let response= await axios.post('http://localhost:3000/user/login',obj);
+        let response= await axios.post('http://localhost:3000/users/login',obj);
          if(response.status === 201)
          {
             localStorage.setItem('token',response.data.token)
             Message.innerHTML='<h3>User logged in successfully!</h3>'
+            window.location.href = 'message.html';
          }
 
     }

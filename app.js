@@ -5,8 +5,13 @@ const cors = require('cors');
 require('dotenv').config();
 const Sequelize = require('./util/database');
 
-const userRoutes = require('./routes/signup');
 
+const User = require('./models/signup');
+const Messages = require('./models/messeges');
+
+
+const userRoutes = require('./routes/signup');
+const messageRoutes = require('./routes/message')
 
 const app = express();
 
@@ -17,13 +22,16 @@ app.use(bodyParser.urlencoded({extended : false}));
 app.use(express.static(path.join(__dirname, 'public')));
 
 
-app.use('/user',userRoutes);
-
+app.use('/users',userRoutes);
+app.use('/chat',messageRoutes);
 
 
 app.use((req,res)=>{
     res.sendFile(path.join(__dirname,`frontend/${req.url}`))
 })
+
+User.hasMany(Messages);
+Messages.belongsTo(User)
 
 Sequelize
 //.sync({force:true})
