@@ -4,7 +4,11 @@ let token =localStorage.getItem('token');
 let Users = document.getElementById('users')
 let Messages = document.getElementById('messages')
 messageForm.addEventListener('submit',addMessage);
-document.addEventListener('DOMContentLoaded', Joined)
+document.addEventListener('DOMContentLoaded',initialize )
+async function initialize() {
+    Joined();
+    setTimeout(async()=>{await displayMessage()}, 1000); // Refresh messages every 1 second
+}
 async function addMessage(e){
     e.preventDefault();
     let message = document.getElementById('messageInput').value;
@@ -23,6 +27,7 @@ async function addMessage(e){
 
     }
 }
+
 
 async function Joined(){
    try{
@@ -60,6 +65,7 @@ async function displayMessage (){
         li.classList.add('messages')
         Messages.appendChild(li);
         }
+        setTimeout(async()=>{await displayMessage()}, 5000);
     }
     catch(err){
         console.log(err);
