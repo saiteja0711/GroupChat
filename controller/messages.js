@@ -32,11 +32,16 @@ const users = async (req,res,next) =>{
 }
 
 const Message = async (req,res,next)=>{
+     let id = Number(req.query.Lstid)
+     console.log("id>>>>>>>>>>>>>>",id)
+    
     try{
         let response = await Messages.findAll({
-            attributes:['message'],
-            include:{model:Users,attributes:['name']}
+            attributes:['message','id'],
+            include:{model:Users,attributes:['name']},
+            offset:id
         })
+        //console.log(response);
         res.status(201).json({response})
     }
     catch (err){

@@ -22,6 +22,8 @@ loginForm.addEventListener('submit',loginUser);
          {
             localStorage.setItem('token',response.data.token)
             Message.innerHTML='<h3>User logged in successfully!</h3>'
+            document.getElementById('email').value = '';
+            document.getElementById('password').value='';
             window.location.href = 'message.html';
          }
 

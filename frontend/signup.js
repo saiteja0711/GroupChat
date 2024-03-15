@@ -18,12 +18,17 @@ async function signup(e){
       }
       errorMessages.innerHTML='';
       Message.innerHTML='';
+      
       try{
          let response = await axios.post('http://localhost:3000/users/signup',obj);
          if(response.status === 201)
          {
             Message.innerHTML=`<h3> Successfuly signed up </h3>`
          }
+         document.getElementById('name').value ='';
+         document.getElementById('email').value ='';
+         document.getElementById('phonenumber').value ='';
+         document.getElementById('password').value ='';
       }
       catch (err){
         if(err.response.status === 401)
