@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group Users</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: calc(40vh - 40px);
+             background-color: #f0f2f5;
+        }
+        h1 {
+            margin-bottom: 10px;
+            transform: translateY(-20px);
+            color: #075e54;
+        }
+        #message{
+            transform: translateY(-80%);
+            color: #245852;
+        }
+        .container {
+            display: flex;
+            width: 100%;
+            border-radius: 10px;
+            overflow: hidden;
+            min-height:calc(100vh - 80px);
+            position: fixed;
+            top: 80px; 
+            left: 0px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .group-users, .search {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            width: 100%;
+            background-color: #f0f0f0;
+            border: 2px solid #144f27;
+            border-radius: 10px;
+            margin: 5px; 
+        }
+        input[type="text"] {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            outline: none;
+            width: calc(100% - 90px);
+        }
+        button {
+            margin-left: 10px;
+            padding: 10px 16px;
+            border: none;
+            background-color: #128C7E;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+            outline: none;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #075e54;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        /* li {
+            margin-bottom: 10px;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #8fefa7;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        } */
+        .groupUsers,.serchResults {
+            /* display: flex; */
+            width: 90%;
+            /* justify-content: space-between; */
+            transform: translateX(5px); 
+            padding: 5px;
+            border: 2px solid #144f27;
+            border-radius: 8px;
+            margin: 3px;
+        }
+        .container h2 {
+            margin-top: 0;
+            color: #075e54;
+        }
+        .make-admin ,.remove-user{
+            background-color:  #128C7E;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            margin-bottom: 2px;
+            border-radius: 1px 5px;
+            cursor: pointer;
+        }
+
+        .make-admin:hover,.remove-user:hover {
+            background-color:  #025047;;
+        }
+    </style>
+</head>
+<body>
+    <h1>Group User details</h1>
+    <div id="message"></div>
+    <div class="container">
+        <div class="group-users">
+            <h2>Group Users</h2>
+            <ul id="groupUserList">
+            </ul>
+        </div>
+        <div class="search">
+            <h2>Add Users</h2>
+            <input type="text" id="searchInput" placeholder="Search by email...">
+            <button id="searchButton">Search</button>
+            <ul id="searchResults">
+                <!-- Search results will be displayed here -->
+            </ul>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.5.0/axios.min.js" integrity="sha512-aoTNnqZcT8B4AmeCFmiSnDlc4Nj/KPaZyB5G7JnOnUEkdNpCZs1LCankiYi01sLTyWy+m2P+W4XM+BuQ3Q4/Dg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="group-details.js"></script>
+</body>
+</html>

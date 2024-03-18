@@ -1,6 +1,8 @@
 const Users =require('../models/signup');
 const Messages = require('../models/messeges');
 const userGroups = require('../models/usergroup');
+const { Op } = require('sequelize');
+
  
 const addMessage = async(req,res,next)=>{
     const {message,groupId} = req.body;
@@ -22,15 +24,18 @@ const addMessage = async(req,res,next)=>{
 
 const users = async (req,res,next) =>{
      let groupid = req.query.groupId
+     let offset = req.query.offset
     try{
         let users = await Users.findAll({
-            attributes:['name'],
+            attributes:['id','name','email'],
             include: [
                 {
                     model: userGroups,
-                    where: { groupId: groupid } 
+                    where: { groupId: groupid, id: { [Op.gt]: offset} },
+                    attributes: ['id','isAdmin']
                 }
-            ]
+            ],
+            
         });
 
         res.status(200).json({users});

@@ -15,6 +15,7 @@ const userGroups = require('./models/usergroup');
 const userRoutes = require('./routes/signup');
 const messageRoutes = require('./routes/message');
 const groupRoutes = require('./routes/groups')
+const groupDetailsRoutes = require('./routes/group-details')
 
 const app = express();
 
@@ -28,6 +29,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/users',userRoutes);
 app.use('/chat',messageRoutes);
 app.use('/groups',groupRoutes);
+app.use('/group-details',groupDetailsRoutes)
 
 
 app.use((req,res)=>{

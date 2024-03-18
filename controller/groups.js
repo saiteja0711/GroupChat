@@ -13,7 +13,8 @@ const addGroup = async(req,res,next)=>{
 
     let  usergroup = await userGroups.create({
         userId:req.user.id,
-        groupId:group.id
+        groupId:group.id,
+        isAdmin:true
     })
     res.status(200).json({sucess:true})
     }
@@ -25,6 +26,7 @@ const addGroup = async(req,res,next)=>{
 
 const getUserGroups = async (req,res,next)=>{
     let userid = req.user.id;
+   
 try {
     const groups = await Groups.findAll({
         attributes:['id','groupname'],

@@ -7,7 +7,8 @@ let AddGroupBtn = document.getElementById('add-group')
 let groupsList = document.getElementById("groups")
 let messagesContainer = document.querySelector('.messages-container');
 messageForm.addEventListener('submit',send);
-let lastMessageId;
+let lastMessageId =0;
+let lastUserGroupId = 0;
 
 
 document.addEventListener('DOMContentLoaded',initialize );
@@ -19,6 +20,12 @@ groupsList.addEventListener('click', function(e) {
     if (e.target.classList.contains('show-button')) {
         let groupId = e.target.id;
        localStorage.setItem('groupId',groupId);
+       window.location.href = 'message.html';
+    }
+    else if(e.target.classList.contains('details-button')){
+        let groupId = e.target.id;
+       localStorage.setItem('groupId',groupId);
+       window.location.href = 'group-details.html';
     }
 });
 
@@ -46,8 +53,11 @@ async function scrollToBottom() {
 }
 async function initialize() {
 
-    await showUserGroups()
+    await showUserGroups();
+    if( localStorage.getItem('groupId')!== null)
+   {
     await Joined()
+   }
     
    
 }
@@ -63,7 +73,7 @@ async function showUserGroups(){
             let li = document.createElement('li');
             li.innerHTML=`<div class="group-name"><h3>${response.data[i].groupname}</h3>
                         <button class="show-button" id=${response.data[i].id}>Chat</button>
-                        <button class="show-button" id=${response.data[i].id}>Details</button></div>`
+                        <button class="details-button" id=${response.data[i].id}>Details</button></div>`
             groupsList.appendChild(li);
         }
     }
@@ -96,18 +106,38 @@ async function addMessage(groupId){
 
 async function Joined(){
     let groupId = localStorage.getItem('groupId');
+    let newusers=[];
+    if( localStorage.getItem(`lastUserGroupId -${groupId}`)!== null)
+    {
+        lastUserGroupId = localStorage.getItem(`lastUserGroupId -${groupId}`);
+    }
+
    try{
-        let Response = await axios.get(`http://localhost:3000/chat/users?groupId=${groupId}`);
+        let Response = await axios.get(`http://localhost:3000/chat/users?groupId=${groupId}&offset=${lastUserGroupId}`);
         //console.log(Response.data.users[0].name)
+        
         Users.innerHTML='';
-        for(let i=0;i<Response.data.users.length;i++)
+        if(Response.data.users.length >0)
         {
-        let li = document.createElement('li');
-        li.innerHTML=`<p> ${Response.data.users[i].name} joined </p>`
-        li.classList.add('joined')
-    
-        Users.appendChild(li);
-       }
+          let length  =  Response.data.users.length;
+        
+          for(let i=0;i<Response.data.users.length;i++)
+        {
+        newusers.push(Response.data.users[i]);
+        
+        }
+        let oldusers = [];
+        if( localStorage.getItem(`groupId-${groupId} Users`)!== null)
+        {
+            oldusers  =JSON.parse( localStorage.getItem(`lastUserId -${groupId}`));
+        }
+        let Merge =[]
+        Merge = oldusers.concat(newusers);
+
+       localStorage.setItem(`groupId-${groupId} Users`,JSON.stringify(Merge));
+       localStorage.setItem(`lastUserGroupId -${groupId}`,Response.data.users[length-1].usergroups[0].id);
+      }
+       await displayUsers ();
        await addToLocalStorage ();
        setTimeout(async()=>{await Joined() }, 5000);
     }
@@ -115,17 +145,30 @@ async function Joined(){
         console.log(err);
     }
 } 
+async function displayUsers (){
+    let groupId = localStorage.getItem('groupId')
+    let users = [];
+    if( localStorage.getItem(`groupId-${groupId} Users`)!== null)
+   {
+      users= JSON.parse(localStorage.getItem(`groupId-${groupId} Users`));
+      for(let i=0;i<users.length;i++)
+        {
+        let li = document.createElement('li');
+        li.innerHTML=`<p> ${users[i].name} joined </p>`
+        li.classList.add('joined');
+        
+        Users.appendChild(li);
+        }
+   }
+
+}
 async function addToLocalStorage ()
 {
     let groupId = localStorage.getItem('groupId')
-    if( localStorage.getItem('id')!== null)
+    if( localStorage.getItem(`lastMessageId-${groupId}`)!== null)
    {
-  lastMessageId = localStorage.getItem('id');
+      lastMessageId = localStorage.getItem(`lastMessageId-${groupId}`);
    }
-    if(lastMessageId === undefined)
-    {
-        lastMessageId = 0;
-    }
     try{
     let Response = await axios.get(`http://localhost:3000/chat/messages?Lstid=${lastMessageId}&groupId=${groupId}`);
     //console.log(Response.data.response[0].user.name);
@@ -142,7 +185,7 @@ async function addToLocalStorage ()
             console.log(`${data.user.name} : ${data.message}`)
             newMsg.push(`${data.user.name} : ${data.message}`);
         }
-        localStorage.setItem('id',Response.data.response[length-1].id)
+        localStorage.setItem(`lastMessageId-${groupId}`,Response.data.response[length-1].id)
         //console.log("last id >>>>>>>>>>",lastMessageId)
         let oldMsg =[];
         if( localStorage.getItem(`GroupId-${groupId}`)!== null)
@@ -157,12 +200,13 @@ async function addToLocalStorage ()
         }
         localStorage.setItem(`GroupId-${groupId}`,JSON.stringify(Merge));
         console.log("Updated changes");
-         await displayMessage (groupId)
+         
       }
       else{
         console.log("no changes");
-        await displayMessage (groupId)
+        
       }
+      await displayMessage (groupId)
     }
     catch (err){
         console.log(err);
@@ -175,16 +219,22 @@ async function displayMessage (groupId){
         Messages.innerHTML ='';
         let Response = [];
         Response = JSON.parse(localStorage.getItem(`GroupId-${groupId}`));
-
-       for(let i=0;i<Response.length;i++)
-        {
-        let li = document.createElement('li');
-        li.innerHTML=`<p> ${Response[i]} </p>`
-        li.classList.add('messages')
-        Messages.appendChild(li);
-        }
-         window.onload = await scrollToBottom();
+        if (Response && Response.length > 0) { 
+            for (let i = 0; i < Response.length; i++) {
+                let li = document.createElement('li');
+                li.innerHTML = `<p>${Response[i]}</p>`;
+                li.classList.add('messages');
+                Messages.appendChild(li);
+            }
+            window.onload = await scrollToBottom();
+        } else {
+            // Handle when the array is empty
+            let li = document.createElement('li');
+            li.innerHTML = "<p>No messages yet.</p>";
+            li.classList.add('messages');
+            Messages.appendChild(li);
      }
+    }
     catch(err){
         console.log(err);
     }
