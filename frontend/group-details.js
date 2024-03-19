@@ -7,11 +7,26 @@ let isGroupAdmin = 0;
 let lastUserGroupId = 0;
 let UsersinGroup = [];
 let AllUsers    = [];
+const socket = io('http://localhost:3000')
 
 document.addEventListener('DOMContentLoaded', async () =>{
     await IsAdmin();
     await JoinedUsers();
     await allUsers ();
+});
+
+socket.on('update-users',async (data) =>{
+    console.log(`${groupId}  ${data.groupId}`)
+    if(Number(groupId) === Number(data.groupId))
+    {
+      
+      await JoinedUsers();
+    }
+    else{
+        console.log('failed')
+    }
+
+
 });
 
 async function allUsers (){
@@ -230,7 +245,8 @@ searchResultsList.addEventListener('click', async(e)=>{
        try{
             let response = await axios.post(`http://localhost:3000/group-details/adduser`,obj)
             alert('Sucessfully added User');
-            await JoinedUsers();
+            //await JoinedUsers();
+            socket.emit('add-user',groupId)
             e.target.remove();
         }
         catch(err){

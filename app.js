@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 require('dotenv').config();
 const Sequelize = require('./util/database');
-
+const socketio = require('socket.io');
 
 const User = require('./models/signup');
 const Messages = require('./models/messeges');
@@ -56,7 +56,24 @@ Sequelize
 //.sync({force:true})
 .sync()
 .then (result =>{
-    app.listen(3000);
+    const server = app.listen(3000, () => {
+        console.log('Server is running on port 3000');
+    });
+
+    // Set up Socket.IO server
+    const io = socketio(server);
+
+    io.on('connection', socket => {
+        console.log('socketId is>>>>>>>>>>>',socket.id);
+
+        socket.on('chat-sent',(message,groupId)=>{
+              io.emit('update-messages',{message:message,groupId:groupId})
+        })
+        socket.on('add-user',(groupId)=>{
+            io.emit('update-users',{groupId:groupId})
+        })
+    });
+
 })
 .catch(err =>{
     console.log(err);

@@ -1,3 +1,4 @@
+
 let messageForm = document.getElementById('sendMessage');
 let Chat = document.getElementById('messages');
 let token =localStorage.getItem('token');
@@ -9,11 +10,28 @@ let messagesContainer = document.querySelector('.messages-container');
 messageForm.addEventListener('submit',send);
 let lastMessageId =0;
 let lastUserGroupId = 0;
-
+const socket = io('http://localhost:3000')
 
 document.addEventListener('DOMContentLoaded',initialize );
 
 AddGroupBtn.addEventListener('click',addGroup);
+
+socket.on('update-messages',async (data) =>{
+    let groupId = localStorage.getItem('groupId');
+    console.log(`${groupId}  ${data.groupId}`)
+    if(Number(groupId) === Number(data.groupId))
+    {
+      await Joined();
+      console.log(`${data.message}`)
+    }
+    else{
+        console.log('failed')
+    }
+
+
+});
+
+
 
 groupsList.addEventListener('click', function(e) {
     e.preventDefault();
@@ -84,7 +102,7 @@ async function showUserGroups(){
 async function addMessage(groupId){
     
     let message = document.getElementById('messageInput').value;
-    //console.log(message);
+    
     let obj ={
         message:message,
         groupId:groupId
@@ -94,8 +112,9 @@ async function addMessage(groupId){
             headers : {Authorization :token}
         })
         document.getElementById('messageInput').value ='';
-        //alert("Success")
-         await addToLocalStorage ();
+        socket.emit('chat-sent',message,groupId)
+         //await addToLocalStorage ();
+
      }
     catch (err){
         console.log(err)
@@ -123,7 +142,7 @@ async function Joined(){
         }
        
        await addToLocalStorage ();
-       setTimeout(async()=>{await Joined() }, 5000);
+       //setTimeout(async()=>{await Joined() }, 5000);
     }
     catch(err){
         console.log(err);
