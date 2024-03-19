@@ -84,10 +84,28 @@ const removeUser = async (req,res,next) =>{
     }
 }
 
+const addUser = async(req,res,next)=>{
+    let {userId,groupId,isAdmin} = req.body;
+    
+    try{
+        await userGroups.create({
+         userId: userId,
+         groupId: groupId,
+         isAdmin:isAdmin
+        });
+        res.status(200).json({success:true});
+    }
+    catch (err){
+        res.status(500).json({err:err});
+        console.log(err);
+    }
+}
+
 module.exports ={
     IsAdmin,
     getUsers,
     makeAdmin,
     removeUser,
-    getAllUsers
+    getAllUsers,
+    addUser
 }

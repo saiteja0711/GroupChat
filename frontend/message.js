@@ -106,38 +106,22 @@ async function addMessage(groupId){
 
 async function Joined(){
     let groupId = localStorage.getItem('groupId');
-    let newusers=[];
-    if( localStorage.getItem(`lastUserGroupId -${groupId}`)!== null)
-    {
-        lastUserGroupId = localStorage.getItem(`lastUserGroupId -${groupId}`);
-    }
-
-   try{
-        let Response = await axios.get(`http://localhost:3000/chat/users?groupId=${groupId}&offset=${lastUserGroupId}`);
+    try{
+        let Response = await axios.get(`http://localhost:3000/chat/users?groupId=${groupId}&offset=${0}`);
         //console.log(Response.data.users[0].name)
         
         Users.innerHTML='';
         if(Response.data.users.length >0)
         {
-          let length  =  Response.data.users.length;
-        
           for(let i=0;i<Response.data.users.length;i++)
-        {
-        newusers.push(Response.data.users[i]);
-        
+          {
+          let li = document.createElement('li');
+          li.innerHTML=`<p> ${Response.data.users[i].name} joined </p>`
+          li.classList.add('joined');
+          Users.appendChild(li);
+          }
         }
-        let oldusers = [];
-        if( localStorage.getItem(`groupId-${groupId} Users`)!== null)
-        {
-            oldusers  =JSON.parse( localStorage.getItem(`lastUserId -${groupId}`));
-        }
-        let Merge =[]
-        Merge = oldusers.concat(newusers);
-
-       localStorage.setItem(`groupId-${groupId} Users`,JSON.stringify(Merge));
-       localStorage.setItem(`lastUserGroupId -${groupId}`,Response.data.users[length-1].usergroups[0].id);
-      }
-       await displayUsers ();
+       
        await addToLocalStorage ();
        setTimeout(async()=>{await Joined() }, 5000);
     }
@@ -153,11 +137,10 @@ async function displayUsers (){
       users= JSON.parse(localStorage.getItem(`groupId-${groupId} Users`));
       for(let i=0;i<users.length;i++)
         {
-        let li = document.createElement('li');
-        li.innerHTML=`<p> ${users[i].name} joined </p>`
-        li.classList.add('joined');
-        
-        Users.appendChild(li);
+          let li = document.createElement('li');
+          li.innerHTML=`<p> ${users[i].name} joined </p>`
+          li.classList.add('joined');
+          Users.appendChild(li);
         }
    }
 

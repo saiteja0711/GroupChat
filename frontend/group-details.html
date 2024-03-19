@@ -36,6 +36,11 @@
             left: 0px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
+        .users-container{
+            max-height: 80vh; 
+            overflow-y: auto; 
+            width:100%
+        }
         .group-users, .search {
             flex: 1;
             padding: 20px;
@@ -75,20 +80,12 @@
             padding: 0;
             margin: 0;
         }
-        /* li {
-            margin-bottom: 10px;
-            padding: 15px;
-            border-radius: 8px;
-            background-color: #8fefa7;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        } */
         .groupUsers,.serchResults {
-            /* display: flex; */
             width: 90%;
-            /* justify-content: space-between; */
             transform: translateX(5px); 
             padding: 5px;
-            border: 2px solid #144f27;
+            border: 2px solid #0e7628;
+            background-color: #ced4d2;
             border-radius: 8px;
             margin: 3px;
         }
@@ -117,8 +114,9 @@
     <div class="container">
         <div class="group-users">
             <h2>Group Users</h2>
+            <div class="users-container">
             <ul id="groupUserList">
-            </ul>
+            </ul></div>
         </div>
         <div class="search">
             <h2>Add Users</h2>

@@ -1,21 +1,18 @@
 let groupUserList = document.getElementById('groupUserList');
 let token =localStorage.getItem('token');
 let groupId = localStorage.getItem('groupId')
+let searchResultsList = document.getElementById('searchResults');
 let Message = document.getElementById('message');
 let isGroupAdmin = 0;
+let lastUserGroupId = 0;
 let UsersinGroup = [];
 let AllUsers    = [];
-if( localStorage.getItem(`groupId-${groupId} Users`)!== null)
-   {
-    UsersinGroup= JSON.parse(localStorage.getItem(`groupId-${groupId} Users`));
-   }
 
 document.addEventListener('DOMContentLoaded', async () =>{
     await IsAdmin();
-    await groupUsers();
-    await allUsers ()
-
- });
+    await JoinedUsers();
+    await allUsers ();
+});
 
 async function allUsers (){
     try{
@@ -27,19 +24,20 @@ async function allUsers (){
     }
 }
 
-// Function to search for users by email
-function searchUsersByEmail(email) {
+
+async function searchUsersByEmail(email) {
+    
     const searchResults = AllUsers.filter(user => user.email === email);
     return searchResults;
 }
 
-// Function to handle search button click
-document.getElementById('searchButton').addEventListener('click', () => {
+
+document.getElementById('searchButton').addEventListener('click', async() => {
     const searchInput = document.getElementById('searchInput');
     const email = searchInput.value.trim();
 
-    const searchResults = searchUsersByEmail(email);
-    const searchResultsList = document.getElementById('searchResults');
+    const searchResults = await searchUsersByEmail(email);
+   
     searchResultsList.innerHTML = '';
     searchResults.forEach(user => {
         const li = document.createElement('li');
@@ -52,16 +50,22 @@ document.getElementById('searchButton').addEventListener('click', () => {
         if(UsersinGroup.find(groupUser => groupUser.id === user.id))
         {
             const h4 = document.createElement('h4');
-            h4.textContent = `Already a user of the group`;
+            h4.textContent = `(Already a user of the group)`;
+            h4.style.color ='black'; 
+            h4.style.opacity = '0.5';
             div.appendChild(h4);
         }
-        else{
-            const addUserButton = document.createElement('button');
-            addUserButton.classList.add('add-user');
-            addUserButton.id = user.id;
-            addUserButton.textContent = 'Add User';
-            div.appendChild(addUserButton);
-           }
+        else
+        {
+            if (isGroupAdmin)
+            {
+              const addUserButton = document.createElement('button');
+              addUserButton.classList.add('add-user');
+              addUserButton.id = user.id;
+              addUserButton.textContent = 'Add User';
+              div.appendChild(addUserButton);
+            }
+        }
         li.appendChild(div);
         searchResultsList.appendChild(li);
     });
@@ -92,9 +96,52 @@ async function IsAdmin(){
     }
 
   }
-async function groupUsers(){
+
+  async function JoinedUsers(){
+    let newusers=[];
+    if( localStorage.getItem(`lastUserGroupId -${groupId}`)!== null)
+    {
+        lastUserGroupId = localStorage.getItem(`lastUserGroupId -${groupId}`);
+    }
+
+   try{
+        let Response = await axios.get(`http://localhost:3000/chat/users?groupId=${groupId}&offset=${lastUserGroupId}`);
+        //console.log(Response.data.users[0].name)
         
-        UsersinGroup.forEach( user =>
+        if(Response.data.users.length >0)
+        {
+          let length  =  Response.data.users.length;
+        
+          for(let i=0;i<Response.data.users.length;i++)
+        {
+           newusers.push(Response.data.users[i]);
+        }
+        
+        let oldusers = [];
+        if( localStorage.getItem(`groupId-${groupId} Users`)!== null)
+        {
+            oldusers  =JSON.parse( localStorage.getItem(`groupId-${groupId} Users`));
+        }
+       
+        let Merge =[]
+        Merge = oldusers.concat(newusers);
+
+       localStorage.setItem(`groupId-${groupId} Users`,JSON.stringify(Merge));
+       localStorage.setItem(`lastUserGroupId -${groupId}`,Response.data.users[length-1].usergroups[0].id);
+      }
+       await displayUsers ();
+    }
+    catch(err){
+        console.log(err);
+    }
+} 
+async function displayUsers (){
+    if( localStorage.getItem(`groupId-${groupId} Users`)!== null)
+     {
+        UsersinGroup= JSON.parse(localStorage.getItem(`groupId-${groupId} Users`));
+     }
+     groupUserList.innerHTML='';
+     UsersinGroup.forEach( user =>
         {
             let li = document.createElement('li');
             const div = document.createElement('div');
@@ -132,9 +179,20 @@ async function groupUsers(){
     e.preventDefault();
     if (e.target.classList.contains('make-admin')) {
         let userid = e.target.id;
+        
        try{
             let response = await axios.put(`http://localhost:3000/group-details/makeadmin?groupId=${groupId}&userId=${userid}`)
-            alert('Sucessfully made admin')
+            alert('Sucessfully made admin');
+            const index = UsersinGroup.findIndex(obj => 
+                {
+                    console.log(obj.id)
+                    return Number(obj.id) === Number(userid)
+                });
+            console.log(index);
+            console.log(userid);
+            UsersinGroup[index].usergroups[0].isAdmin = true;
+            localStorage.setItem(`groupId-${groupId} Users`,JSON.stringify(UsersinGroup));
+            e.target.remove();
         }
         catch(err){
             console.log(err);
@@ -142,16 +200,43 @@ async function groupUsers(){
 
         }
     }
-    else if(e.target.classList.contains('details-button')){
+    else if(e.target.classList.contains('remove-user')){
         let userid = e.target.id;
+        
         try{
              let response = await axios.put(`http://localhost:3000/group-details/removeuser?groupId=${groupId}&userId=${userid}`)
-             alert('Sucessfully removed user')
+             alert('Sucessfully removed user');
+             UsersinGroup= UsersinGroup.filter(obj => Number(obj.id) !== Number(userid));
+             localStorage.setItem(`groupId-${groupId} Users`,JSON.stringify(UsersinGroup));
+             e.target.parentElement.remove();
          }
          catch(err){
              console.log(err);
              alert("Try again!..")
  
          }
+    }
+});
+
+searchResultsList.addEventListener('click', async(e)=>{
+    e.preventDefault();
+    if (e.target.classList.contains('add-user')) {
+        let userid = e.target.id;
+        let obj ={
+            userId:userid,
+            groupId:groupId,
+            isAdmin:false
+        }
+       try{
+            let response = await axios.post(`http://localhost:3000/group-details/adduser`,obj)
+            alert('Sucessfully added User');
+            await JoinedUsers();
+            e.target.remove();
+        }
+        catch(err){
+            console.log(err);
+            alert("Try again!...")
+
+        }
     }
 });
