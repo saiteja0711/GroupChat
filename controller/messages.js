@@ -2,7 +2,7 @@ const Users =require('../models/signup');
 const Messages = require('../models/messeges');
 const userGroups = require('../models/usergroup');
 const { Op } = require('sequelize');
-
+const S3services = require('../services/S3services')
  
 const addMessage = async(req,res,next)=>{
     const {message,groupId} = req.body;
@@ -52,7 +52,7 @@ const Message = async (req,res,next)=>{
     
     try{
         let response = await Messages.findAll({
-            attributes:['message','id'],
+            attributes:['message','id','filetype'],
             include:{model:Users,attributes:['name']},
             where:{groupId:groupid},
             offset:id
@@ -65,9 +65,46 @@ const Message = async (req,res,next)=>{
         console.log(err);
     }
 }
+const uploadFiles = async (req,res,next) =>{
+ try{
+    let groupId = Number(req.query.groupId);
+    let userId = req.user.id;
+    
+    if (!req.file) {
+        return res.status(400).json({ success: false, message: 'No file uploaded' });
+    }
+    const file = req.file.buffer;
+    const mimeType = req.file.mimetype;
+    let value = 'none'
+    if (mimeType.startsWith('image/')) {
+        value = 'image';
+    }
+    else if (mimeType.startsWith('video/')) {
+        value = 'video';
+    }
+    else if (mimeType.startsWith('audio/')) {
+          value = 'audio';
+    }
+    else {
+        value = 'file not supported'
+    }
+
+    const filename = `${userId}/${new Date()}${file.name}`;
+    const fileUrl = await S3services.uploadToS3(file,filename);
+    await Messages.create({message:fileUrl,filetype:value,userId:userId,groupId:groupId});
+    res.status(200).json({success:true,message:'File Sent'})
+    }
+    catch(error){
+        console.log(error)
+        res.status(500).json({message:error})
+    }
+
+
+}
 
 module.exports ={
     addMessage,
     users,
-    Message
+    Message,
+    uploadFiles
 }

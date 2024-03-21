@@ -66,8 +66,9 @@ Sequelize
     io.on('connection', socket => {
         console.log('socketId is>>>>>>>>>>>',socket.id);
 
-        socket.on('chat-sent',(message,groupId)=>{
-              io.emit('update-messages',{message:message,groupId:groupId})
+        socket.on('chat-sent',(groupId)=>{
+            console.log('B')
+              io.emit('update-messages',{groupId:groupId})
         })
         socket.on('add-user',(groupId)=>{
             io.emit('update-users',{groupId:groupId})

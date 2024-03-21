@@ -17,12 +17,13 @@ document.addEventListener('DOMContentLoaded',initialize );
 AddGroupBtn.addEventListener('click',addGroup);
 
 socket.on('update-messages',async (data) =>{
+    
     let groupId = localStorage.getItem('groupId');
     console.log(`${groupId}  ${data.groupId}`)
     if(Number(groupId) === Number(data.groupId))
     {
       await Joined();
-      console.log(`${data.message}`)
+     
     }
     else{
         console.log('failed')
@@ -53,8 +54,18 @@ async function send(e)
     
     if(localStorage.getItem('groupId') !== null)
     {
+        let file = document.getElementById('fileInput').files[0];
+        let message = document.getElementById('messageInput').value;
         let groupId = localStorage.getItem('groupId');
-        addMessage(groupId)
+        let formData
+        if(file)
+        {
+        formData = new FormData();
+        formData.append("fileInput",file);
+        console.log([...formData]);
+        }
+        addMessage(groupId,formData,message)
+        
     }
     else{
         alert('select a group to Message')
@@ -99,20 +110,30 @@ async function showUserGroups(){
         console.log(err);
     }
 }
-async function addMessage(groupId){
+async function addMessage(groupId,file,message){
     
-    let message = document.getElementById('messageInput').value;
+    
     
     let obj ={
         message:message,
         groupId:groupId
     } 
     try{
-        let response = await axios.post('http://localhost:3000/chat/messages',obj,{
-            headers : {Authorization :token}
-        })
-        document.getElementById('messageInput').value ='';
-        socket.emit('chat-sent',message,groupId)
+        if(file)
+        {
+          let response = await axios.post(`http://localhost:3000/chat/files?groupId=${groupId}`, file,{
+                headers:{Authorization:token ,"Content-Type": "multipart/form-data"}}) 
+                document.getElementById('fileInput').value='';
+
+        }
+        if(message)
+        {
+            let response = await axios.post('http://localhost:3000/chat/messages',obj,{
+                headers : {Authorization :token}})
+            document.getElementById('messageInput').value ='';
+       }
+        socket.emit('chat-sent',groupId)
+        
          //await addToLocalStorage ();
 
      }
@@ -184,8 +205,14 @@ async function addToLocalStorage ()
         for(let i=0;i<length;i++)
         {
             let data = Response.data.response[i];
-            console.log(`${data.user.name} : ${data.message}`)
+            if(data.filetype === 'none')
+            {
+            console.log(`${data.user.name} : ${data.message}`);
             newMsg.push(`${data.user.name} : ${data.message}`);
+            }
+            else{
+                newMsg.push(data);
+            }
         }
         localStorage.setItem(`lastMessageId-${groupId}`,Response.data.response[length-1].id)
         //console.log("last id >>>>>>>>>>",lastMessageId)
@@ -223,8 +250,42 @@ async function displayMessage (groupId){
         Response = JSON.parse(localStorage.getItem(`GroupId-${groupId}`));
         if (Response && Response.length > 0) { 
             for (let i = 0; i < Response.length; i++) {
+                console.log(Response[i].filetype);
                 let li = document.createElement('li');
-                li.innerHTML = `<p>${Response[i]}</p>`;
+                if(typeof Response[i] === 'string')
+                {
+                   
+                    li.innerHTML = `<p>${Response[i]}</p>`;
+                }
+                else if(Response[i].filetype === 'image'){
+                   
+                    li.innerHTML =`<p>${Response[i].user.name}</p>
+                              <img src=${Response[i].message} alt ='not Loded' width="300" height="auto"> `;
+                   
+                }
+                else if(Response[i].filetype === 'video')
+                {
+                    li.innerHTML =`<p>${Response[i].user.name}</p>
+                    <video width="400" height= auto controls>
+                    <source src=${Response[i].message} type="video/mp4">
+                    Your browser does not support the video tag.
+                    </video> `;
+                }
+                else if(Response[i].filetype === 'audio')
+                {
+                    li.innerHTML =`<p>${Response[i].user.name}</p>
+                    <audio width="400" height= auto controls>
+                    <source src=${Response[i].message} type="audio/mpeg">
+                    Your browser does not support the audio element.
+                    </audio>`
+
+                }
+                else if(Response[i].filetype === 'file not supported')
+                {
+                    li.innerHTML =`<p>${Response[i].user.name}</p>
+                    <p>Your browser does not support the audio element.
+                    </p>`
+                }
                 li.classList.add('messages');
                 Messages.appendChild(li);
             }

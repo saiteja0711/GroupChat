@@ -24,7 +24,8 @@
         .messages-container {
             max-height: 80vh; 
             overflow-y: auto; 
-            width:100%
+            width:100%;
+           
         }
         .groupContainer{
             max-height: 70vh; 
@@ -52,16 +53,13 @@
             
             width:20%;
             background-color: #f0f0f0;
+            border-right:1px solid #202020;
             padding: 20px;
             padding-right: 5px;
             min-height: calc(100vh - 60px);
            
         }
-        /* .messages-container {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-        } */
+       
         .messages {
             list-style-type: none;
             margin: 20px 0;
@@ -73,21 +71,38 @@
         }
         #sendMessageContainer {
             position: fixed;
-            bottom: 10px;
+            bottom: 0px;
             width: 90%;
             margin: 20px auto;
             transform: translateX(30%);
             display: flex;
             align-items: center; 
         }
+       
         #sendMessage {
             width: 70%;
-            background-color: #fff;
+            background-color: #f0f0f0 ;
             padding: 10px;
             border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            /* box-shadow: 0 0 20px rgba(0, 0, 0, 0.1); */
+            border:1px solid #202020;
             display: flex; 
             align-items: center;
+        }
+        #sendMessage input[type="file"] {
+            display: none; 
+        }
+        #sendMessage .fileInputLabel {
+            background-color: #128C7E;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+        #sendMessage.fileInputLabel:hover {
+            background-color: #025047;
         }
         input[type="text"],
         input[type="password"] {
@@ -99,7 +114,7 @@
             box-sizing: border-box;
         }
         button[type="submit"] {
-            background-color: #0891ba;
+            background-color: #128C7E;;
             color: white;
             padding: 10px 20px;
             border: none;
@@ -107,7 +122,7 @@
             cursor: pointer;
         }
         button[type="submit"]:hover {
-            background-color: #03657d;
+            background-color: #025047;
         }
        
         .joined{
@@ -161,6 +176,7 @@
             <h2>List Of Your Groups</h2>
             <button class="create-group-button" id="add-group">Create Group</button>
             <!-- List of groups will go here -->
+            
             <div class="groupContainer">
             <ul id="groups"></ul>
              </div>
@@ -177,7 +193,9 @@
     <div id="sendMessageContainer">
         <form id="sendMessage">
             <label for="messageInput">Message:</label>
-            <input type="text" id="messageInput" placeholder="Enter messages here" name="messageInput" required>
+            <input type="text" id="messageInput" placeholder="Enter messages here" name="messageInput" >
+            <label class="fileInputLabel" for="fileInput">Choose File</label>
+            <input type="file" id="fileInput" name ="fileInput">
             <button type="submit">Send</button>
         </form>
     </div>
