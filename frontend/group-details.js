@@ -3,31 +3,78 @@ let token =localStorage.getItem('token');
 let groupId = localStorage.getItem('groupId')
 let searchResultsList = document.getElementById('searchResults');
 let Message = document.getElementById('message');
+
 let isGroupAdmin = 0;
 let lastUserGroupId = 0;
 let UsersinGroup = [];
 let AllUsers    = [];
 const socket = io('http://localhost:3000')
 
+
+async function parseJwt(token) {
+    try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map((c) => {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        
+        return JSON.parse(jsonPayload);
+    } catch (error) {
+        console.error('Error parsing JWT:', error);
+        return null;
+    }
+}
+
+
 document.addEventListener('DOMContentLoaded', async () =>{
-    await IsAdmin();
+    if (!token) {
+        console.error('Token not found. Please log in.');
+        return;
+      }
+      const decodedToken = parseJwt(token);
+      let userId = decodedToken.userId;
+    
     await JoinedUsers();
+    await IsAdmin(userId);
     await allUsers ();
 });
 
 socket.on('update-users',async (data) =>{
-    console.log(`${groupId}  ${data.groupId}`)
     if(Number(groupId) === Number(data.groupId))
     {
-      
       await JoinedUsers();
     }
     else{
         console.log('failed')
     }
-
-
 });
+
+socket.on('make-admin',async(data) =>{
+    await updateLocalStorage('make-admin',data.userid)
+})
+socket.on('remove-user',async(data) =>{
+    await updateLocalStorage('remove-user',data.userid)
+})
+
+
+async function updateLocalStorage(message,userid){
+    if(message === 'make-admin')
+    {
+        const index = UsersinGroup.findIndex(obj =>  Number(obj.id) === Number(userid));
+        UsersinGroup[index].usergroups[0].isAdmin = true;
+        localStorage.setItem(`groupId-${groupId} Users`,JSON.stringify(UsersinGroup));
+        await IsAdmin(userid)
+        await displayUsers ()
+        
+    }
+    if(message === 'remove-user')
+    {
+        UsersinGroup= UsersinGroup.filter(obj => Number(obj.id) !== Number(userid));
+        localStorage.setItem(`groupId-${groupId} Users`,JSON.stringify(UsersinGroup));
+        await displayUsers ()
+    }
+}
 
 async function allUsers (){
     try{
@@ -45,7 +92,6 @@ async function searchUsersByEmail(email) {
     const searchResults = AllUsers.filter(user => user.email === email);
     return searchResults;
 }
-
 
 document.getElementById('searchButton').addEventListener('click', async() => {
     const searchInput = document.getElementById('searchInput');
@@ -89,13 +135,11 @@ document.getElementById('searchButton').addEventListener('click', async() => {
 
 
 
-async function IsAdmin(){
+async function IsAdmin(userId){
     try{
-        let response = await axios.get(`http://localhost:3000/group-details/isadmin?groupId=${groupId}`,{
-            headers : {Authorization :token}
-        })
-        //console.log(response);
-        if(response.data.isAdmin)
+        
+          const index = UsersinGroup.findIndex(obj =>  Number(obj.id) === Number(userId));
+        if(UsersinGroup[index].usergroups[0].isAdmin )
         {
             Message.innerHTML ="<h3>You are an admin </h3>";
             isGroupAdmin = 1;
@@ -103,7 +147,6 @@ async function IsAdmin(){
         else {
             Message.innerHTML ="<h3>You are not an admin</h3>";
         }   
-        
         }
     
     catch (err){
@@ -198,16 +241,10 @@ async function displayUsers (){
        try{
             let response = await axios.put(`http://localhost:3000/group-details/makeadmin?groupId=${groupId}&userId=${userid}`)
             alert('Sucessfully made admin');
-            const index = UsersinGroup.findIndex(obj => 
-                {
-                    console.log(obj.id)
-                    return Number(obj.id) === Number(userid)
-                });
-            console.log(index);
-            console.log(userid);
-            UsersinGroup[index].usergroups[0].isAdmin = true;
-            localStorage.setItem(`groupId-${groupId} Users`,JSON.stringify(UsersinGroup));
+            
+            
             e.target.remove();
+            socket.emit('make-admin',userid)
         }
         catch(err){
             console.log(err);
@@ -221,9 +258,8 @@ async function displayUsers (){
         try{
              let response = await axios.put(`http://localhost:3000/group-details/removeuser?groupId=${groupId}&userId=${userid}`)
              alert('Sucessfully removed user');
-             UsersinGroup= UsersinGroup.filter(obj => Number(obj.id) !== Number(userid));
-             localStorage.setItem(`groupId-${groupId} Users`,JSON.stringify(UsersinGroup));
              e.target.parentElement.remove();
+             socket.emit('remove-user',userid)
          }
          catch(err){
              console.log(err);

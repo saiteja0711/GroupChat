@@ -24,14 +24,14 @@ const addMessage = async(req,res,next)=>{
 
 const users = async (req,res,next) =>{
      let groupid = req.query.groupId
-     let offset = req.query.offset
+     let lastUserGroupId = req.query.offset
     try{
         let users = await Users.findAll({
             attributes:['id','name','email'],
             include: [
                 {
                     model: userGroups,
-                    where: { groupId: groupid, id: { [Op.gt]: offset} },
+                    where: { groupId: groupid, id: { [Op.gt]: lastUserGroupId} },
                     attributes: ['id','isAdmin']
                 }
             ],
@@ -54,8 +54,12 @@ const Message = async (req,res,next)=>{
         let response = await Messages.findAll({
             attributes:['message','id','filetype'],
             include:{model:Users,attributes:['name']},
-            where:{groupId:groupid},
-            offset:id
+            where: {
+                groupId: groupId,
+                id: {
+                    [Op.gt]: id
+                }
+            }
         })
         //console.log(response);
         res.status(201).json({response})
@@ -75,7 +79,7 @@ const uploadFiles = async (req,res,next) =>{
     }
     const file = req.file.buffer;
     const mimeType = req.file.mimetype;
-    let value = 'none'
+    let value ;
     if (mimeType.startsWith('image/')) {
         value = 'image';
     }

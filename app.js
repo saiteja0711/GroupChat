@@ -3,6 +3,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 require('dotenv').config();
+const CronJob = require('./services/cronjob');
+CronJob.job.start();
 const Sequelize = require('./util/database');
 const socketio = require('socket.io');
 
@@ -18,6 +20,7 @@ const groupRoutes = require('./routes/groups')
 const groupDetailsRoutes = require('./routes/group-details')
 
 const app = express();
+
 
 
 app.use(cors());
@@ -67,11 +70,16 @@ Sequelize
         console.log('socketId is>>>>>>>>>>>',socket.id);
 
         socket.on('chat-sent',(groupId)=>{
-            console.log('B')
               io.emit('update-messages',{groupId:groupId})
         })
         socket.on('add-user',(groupId)=>{
             io.emit('update-users',{groupId:groupId})
+        })
+        socket.on('make-admin',(userid)=>{
+            io.emit('make-admin',{userid:userid})
+        })
+        socket.on('remove-user',(userid)=>{
+            io.emit('remove-user',{userid:userid})
         })
     });
 

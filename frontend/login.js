@@ -20,6 +20,7 @@ loginForm.addEventListener('submit',loginUser);
         let response= await axios.post('http://localhost:3000/users/login',obj);
          if(response.status === 201)
          {
+            localStorage.clear();
             localStorage.setItem('token',response.data.token)
             Message.innerHTML='<h3>User logged in successfully!</h3>'
             document.getElementById('email').value = '';
